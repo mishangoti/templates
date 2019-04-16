@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+
+    <title>FilePond PHP Boilerplate Project</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    
+    <!-- Get FilePond and FilePond image preview plugin styles from a CDN -->
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+
+    <style>
+        /* FilePond will automatically fill up all available horizontal space, it's best to limit it in some way */
+        form {
+            max-width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <form action="savefile.php" method="post" enctype="multipart/form-data">
+                <div class="row"><h4>Image</h4></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="file" name="filepondimage1" >
+                        <input type="hidden" name="img1" value="">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="file" name="filepondimage2">
+                        <input type="hidden" name="img2" value="">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="file" name="filepondimage3" >
+                        <input type="hidden" name="img3" value="">
+                    </div>
+                </div>
+                <div class="row"><h4>video</h4></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="file" name="filepondvideo">
+                        <input type="hidden" name="video" value="">
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4"></div>
+                </div>
+                <div class="row"><h4>Pdf</h4></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="file" name="filepondpdf">
+                        <input type="hidden" name="pdf" value="">
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4"></div>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        
+    </div>
+    
+
+    <!-- Babel polyfill, contains Promise -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser-polyfill.min.js"></script>
+
+
+    <!-- Get FilePond polyfills from the CDN -->
+    <script src="https://unpkg.com/filepond-polyfill/dist/filepond-polyfill.js"></script>
+  
+   
+    <!-- Get FilePond JavaScript and its plugins from the CDN -->
+    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-resize/dist/filepond-plugin-image-resize.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+
+    <!-- FilePond init script -->
+
+    <script>
+       
+        // Register plugins
+        FilePond.registerPlugin(
+            FilePondPluginFileValidateSize,
+            FilePondPluginImageExifOrientation,
+            FilePondPluginImageCrop,
+            FilePondPluginImageResize,
+            FilePondPluginImagePreview,
+            FilePondPluginImageTransform,
+            FilePondPluginFileValidateType
+        );
+
+        // Turn a file input into a file pond
+        var pondimage1 = FilePond.create(
+            document.querySelector('input[name="filepondimage1"]'),
+            {
+
+                // maximum allowed file size
+                maxFileSize: '5MB',
+                // crop the image to a 1:1 ratio
+                imageCropAspectRatio: '1:1',
+                // resize the image
+                imageResizeTargetWidth: 200,
+                // file type validation
+                labelFileTypeNotAllowed: 'File Should Image Only',
+                acceptedFileTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],        
+                // upload to this server end point
+                server: {
+                    url: 'http://localhost/filepond/',
+                    process: {
+                        url: './submit.php',
+                        method: 'POST',
+                        headers: {
+                            // 'x-customheader': 'Hello World'
+                        },
+                        withCredentials: false,
+                        onload: (response) => {
+                            $("#img1").val(response);
+                            console.log(response)
+                        },
+                        onerror: (response) => response.data,
+                        ondata: (formData) => {
+                            console.log(formData)
+                            formData.append('Hello', 'World');
+                            return formData;
+                        }
+                    },
+                    revert: './revert.php',
+                }
+            });
+
+         var pondimage2 = FilePond.create(
+            document.querySelector('input[name="filepondimage2"]'),
+            {
+                // maximum allowed file size
+                maxFileSize: '5MB',
+                // crop the image to a 1:1 ratio
+                imageCropAspectRatio: '1:1',
+                // resize the image
+                imageResizeTargetWidth: 200,
+                // file type validation
+                labelFileTypeNotAllowed: 'File Should Image Only',
+                acceptedFileTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],        
+                // upload to this server end point
+               server: {
+                    url: 'http://localhost/filepond/',
+                    process: {
+                        url: './submit.php',
+                        method: 'POST',
+                        headers: {
+                            // 'x-customheader': 'Hello World'
+                        },
+                        withCredentials: false,
+                        onload: (response) => {
+                            $("#img2    ").val(response);
+                            console.log(response)
+                        },
+                        onerror: (response) => response.data,
+                        ondata: (formData) => {
+                            console.log(formData)
+                            formData.append('Hello', 'World');
+                            return formData;
+                        }
+                    },
+                    revert: './revert.php',
+                }
+            });
+          var pondimage3 = FilePond.create(
+            document.querySelector('input[name="filepondimage3"]'),
+            {
+                // maximum allowed file size
+                maxFileSize: '5MB',
+                // crop the image to a 1:1 ratio
+                imageCropAspectRatio: '1:1',
+                // resize the image
+                imageResizeTargetWidth: 200,
+                // file type validation
+                labelFileTypeNotAllowed: 'File Should Image Only',
+                acceptedFileTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],        
+                // upload to this server end point
+                server: {
+                    url: 'http://localhost/filepond/',
+                     process: {
+                        url: './submit.php',
+                        method: 'POST',
+                        headers: {
+                            // 'x-customheader': 'Hello World'
+                        },
+                        withCredentials: false,
+                        onload: (response) => {
+                            $("#img3").val(response);
+                            console.log(response)
+                        },
+                        onerror: (response) => response.data,
+                        ondata: (formData) => {
+                            console.log(formData)
+                            formData.append('Hello', 'World');
+                            return formData;
+                        }
+                    },
+                    revert: './revert.php',
+                }
+            });
+
+        var pondvideo = FilePond.create(
+            document.querySelector('input[name="filepondvideo"]'),
+            {
+                // maximum allowed file size
+                maxFileSize: '5MB',
+                 // file type validation
+                labelFileTypeNotAllowed: 'File Should Video Only',
+                acceptedFileTypes: ['video/mp4', 'video/mov', 'video/3gp', 'video/ogg', 'video/FLV', 'video/AVI','video/webm','video/ogv'],        
+                // upload to this server end point
+                server: {
+                    url: 'http://localhost/filepond/',
+                    process: {
+                        url: './submit.php',
+                        method: 'POST',
+                        headers: {
+                            // 'x-customheader': 'Hello World'
+                        },
+                        withCredentials: false,
+                        onload: (response) => {
+                            $("#video").val(response);
+                            console.log(response)
+                        },
+                        onerror: (response) => response.data,
+                        ondata: (formData) => {
+                            console.log(formData)
+                            formData.append('Hello', 'World');
+                            return formData;
+                        }
+                    },
+                    revert: './revert.php',
+                }
+            });
+
+         var pondpdf = FilePond.create(
+            document.querySelector('input[name="filepondpdf"]'),
+            {
+                // maximum allowed file size
+                maxFileSize: '5MB',
+                 // file type validation
+                labelFileTypeNotAllowed: 'File Should Pdf Only',
+                acceptedFileTypes: ['application/pdf'],        
+                // upload to this server end point
+                server: {
+                    url: 'http://localhost/filepond/',
+                     process: {
+                        url: './submit.php',
+                        method: 'POST',
+                        headers: {
+                            // 'x-customheader': 'Hello World'
+                        },
+                        withCredentials: false,
+                        onload: (response) => {
+                            $("#pdf").val(response);
+                            console.log(response)
+                        },
+                        onerror: (response) => response.data,
+                        ondata: (formData) => {
+                            console.log(formData)
+                            formData.append('Hello', 'World');
+                            return formData;
+                        }
+                    },
+                    revert: './revert.php',
+                }
+            });
+    </script>
+
+</body>
+</html>
